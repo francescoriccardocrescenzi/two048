@@ -195,7 +195,12 @@ class Game:
                 # The indexing may fail due to out of bounds errors and thus a try block is required. If the indexing
                 # fail, just try a different pair of indeces.
                 try:
-                    if self.table[i,j] == self.table[i+1,j] or self.table[i,j] == self.table[i,j+1]:
+                    if self.table[i,j] == self.table[i+1,j]:
+                        return
+                except:
+                    pass
+                try:
+                    if self.table[i,j] == self.table[i,j+1]:
                         return
                 except:
                     pass
