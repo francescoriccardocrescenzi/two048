@@ -12,7 +12,7 @@ This module defines a class Game whose instances are 2048 games.
 import numpy as np
 import random
 from enum import Enum
-from re import sub
+import re
 
 random.seed()
 
@@ -33,13 +33,12 @@ class Game:
     The status of the game (WON - LOST - IN_PROGRESS) is memorized as a Status Enum.
     """
 
-    def __init__(self, n, winning_number):
+    def __init__(self, n: int, winning_number: int):
         """Initialize a 2048 game and set up all the instance variables.
 
         Arguments:
-            self
-            n -- integer representing the size of the game table
-            winning_number -- integer representing the number that the user should exceed to win
+            n -- size of the game table
+            winning_number -- number that the user should exceed to win
         """
         self.n = n
         self.table = np.zeros((n, n), dtype=int)
@@ -208,11 +207,9 @@ class Game:
 
     def display(self):
         """Display the game table in a legible format."""
-        # We use the array_str numpy method to convert the table to a string, and then we use a regular expression to
-        # remove the brackets. The first bracket needs to be replaced by a space to preserve indentation.
-        # A blank line is printed before and after the table.
+        # The first bracket needs to be replaced by a space to preserve indentation.
         print()
-        print(sub("[\[\]]", "", " " + np.array_str(self.table)))
+        print(re.sub("[\[\]]", "", " " + np.array_str(self.table)))
         print()
 
     def insert_random_2(self):

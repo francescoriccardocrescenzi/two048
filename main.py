@@ -1,5 +1,5 @@
 """Play a command line "2048" game."""
-from two048 import *
+from two048 import Game, Status
 
 # Create a new "2048" game, set a random entry and display it.
 game = Game(4, 2048)
@@ -18,7 +18,7 @@ while game.status == Status.IN_PROGRESS:
     elif c == "a":
         game.shift_left()
     else:
-        continue
+        print("Use the 'w', 'a', 's', 'd' keys to control the game.")
 
     game.insert_random_2()
     game.update_status()
