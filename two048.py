@@ -192,16 +192,16 @@ class Game:
         for i in range(self.n):
             for j in range(self.n):
                 # The indexing may fail due to out of bounds errors and thus a try block is required. If the indexing
-                # fail, just try a different pair of indeces.
+                # fail, just try a different pair of indices.
                 try:
                     if self.table[i,j] == self.table[i+1,j]:
                         return
-                except:
+                except IndexError:
                     pass
                 try:
                     if self.table[i,j] == self.table[i,j+1]:
                         return
-                except:
+                except IndexError:
                     pass
         self.status = Status.LOST
 
@@ -214,11 +214,10 @@ class Game:
 
     def insert_random_2(self):
         """Replace a random null entry of self.table with the number 2. Nothing is done if there is no null entry."""
-        if np.any(self.table == 0):
-            # Select random indices i,j until self.table[i, j] == 0. Then set self.table[i, j] = 2.
-            i = random.randrange(self.n)
-            j = random.randrange(self.n)
-            while self.table[i, j] != 0:
-                i = random.randrange(self.n)
-                j = random.randrange(self.n)
+        coordinates = np.where(self.table == 0)
+        number_of_empty_cells = coordinates[0].shape[0]
+        if number_of_empty_cells > 0:
+            k = random.randrange(number_of_empty_cells)
+            i = coordinates[0][k]
+            j = coordinates[1][k]
             self.table[i, j] = 2
