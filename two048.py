@@ -47,6 +47,61 @@ class Game:
 
         self.insert_random_2()
 
+    def compact(self, axis: int, direction: int):
+        """Compact self.table along the given axis and towards the given direction.
+
+        Arguments:
+            axis -- 0 for rows, 1 for columns
+            direction -- +1 to compact towards the beginning, -1 to compact towards the end
+        """
+        # The code is written to work along rows. The axis == 1 case is covered by creating a transposed view of
+        # self.table. If the direction is set to -1 we also permutate the columns of such view.
+        table_view = self.table if axis == 0 else self.table.transpose()
+        table_view = table_view[:, ::direction]
+
+        # Compact each row of table_view one at a time.
+        # i -- row index
+        # j -- column index
+        for i in range(self.n):
+            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
+            num_eliminated_elements = 0
+            j = 0
+            while j < self.n - num_eliminated_elements - 1:
+                if table_view[i, j] == 0:
+                    # Compact the array by "eliminating" table_view[i, j]. The concatenate function is used for the sake
+                    # of efficiency.
+                    table_view[i, j:] = np.concatenate((table_view[i, j + 1:], np.zeros(1)))
+                    num_eliminated_elements += 1
+                else:
+                    j += 1
+
+    def sum_adjacent_equal_elements(self, axis: int, direction: int):
+        """Sum the adjacent equal elements along the given axis and towards the given direction.
+
+        Arguments:
+            axis -- 0 for rows, 1 for columns
+            direction -- +1 to compact towards the beginning, -1 to compact towards the end
+        """
+        # The code is written to work along rows. The axis == 1 case is covered by creating a transposed view of
+        # self.table. If the direction is set to -1 we also permutate the columns of such view.
+        table_view = self.table if axis == 0 else self.table.transpose()
+        table_view = table_view[:, ::direction]
+
+        # Compact each row of table_view one at a time.
+        # i -- row index
+        # j -- column index
+        for i in range(self.n):
+            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
+            num_eliminated_elements = 0
+            j = 0
+            while j < self.n - num_eliminated_elements - 1:
+                if table_view[i, j] == table_view[i, j + 1]:
+                    table_view[i, j + 1] = 2 * table_view[i, j + 1]
+                    table_view[i, j:] = np.concatenate((table_view[i, j + 1:], np.zeros(1)))
+                    num_eliminated_elements += 1
+                else:
+                    j += 1
+
     def shift_left(self):
         """Shift the table left.
 
@@ -54,30 +109,8 @@ class Game:
             - compact the row to the left by removing empty space
             - replace consecutive equal integers with a single integer equal to their sum
         """
-        # i -- row index
-        # j -- column index
-        for i in range(self.n):
-            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
-            num_eliminated_elements = 0
-            # Iterate over the i-th row to compact the row by eliminating null entries.
-            j = 0
-            while j < self.n - num_eliminated_elements - 1:
-                if self.table[i, j] == 0:
-                    # Compact the array by "eliminating" self.table[i, j]. The concatenate function is used for the sake
-                    # of efficiency.
-                    self.table[i, j:] = np.concatenate((self.table[i, j + 1:], np.zeros(1)))
-                    num_eliminated_elements += 1
-                else:
-                    j += 1
-            # Iterate over the i-th row again to sum up consecutive equal entries.
-            j = 0
-            while j < self.n - num_eliminated_elements - 1:
-                if self.table[i, j] == self.table[i, j + 1]:
-                    self.table[i, j + 1] = 2*self.table[i, j + 1]
-                    self.table[i, j:] = np.concatenate((self.table[i, j + 1:], np.zeros(1)))
-                    num_eliminated_elements += 1
-                else:
-                    j += 1
+        self.compact(0, +1)
+        self.sum_adjacent_equal_elements(0, +1)
 
     def shift_right(self):
         """Shift the table right.
@@ -86,30 +119,8 @@ class Game:
             - compact the row to the right by removing empty space
             - replace consecutive equal integers with a single integer equal to their sum
         """
-        # i -- row index
-        # j -- column index
-        for i in range(self.n):
-            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
-            num_eliminated_elements = 0
-            # Iterate through the i-th row in reverse order to compact the row by eliminating null entries.
-            j = self.n - 1
-            while j > num_eliminated_elements:
-                if self.table[i, j] == 0:
-                    # Compact the array by "eliminating" self.table[i, j]. The concatenate function is used for the sake
-                    # of efficiency.
-                    self.table[i, :j + 1] = np.concatenate((np.zeros(1), self.table[i, :j]))
-                    num_eliminated_elements += 1
-                else:
-                    j -= 1
-            # Iterate over the i-th row again to sum up consecutive equal entries.
-            j = self.n - 1
-            while j > num_eliminated_elements:
-                if self.table[i, j] == self.table[i, j - 1]:
-                    self.table[i, j - 1] = 2 * self.table[i, j - 1]
-                    self.table[i, :j + 1] = np.concatenate((np.zeros(1), self.table[i, :j]))
-                    num_eliminated_elements += 1
-                else:
-                    j -= 1
+        self.compact(0, -1)
+        self.sum_adjacent_equal_elements(0, -1)
 
     def shift_up(self):
         """Shift the table up.
@@ -118,30 +129,8 @@ class Game:
             - compact the column above by removing empty space
             - replace consecutive equal integers with a single integer equal to their sum
         """
-        # i -- column index
-        # j -- row index
-        for i in range(self.n):
-            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
-            num_eliminated_elements = 0
-            # Iterate through the i-th column in reverse order to compact the row by eliminating null entries.
-            j = 0
-            while j < self.n - num_eliminated_elements - 1:
-                if self.table[j, i] == 0:
-                    # Compact the array by "eliminating" self.table[i, j]. The concatenate function is used for the sake
-                    # of efficiency.
-                    self.table[j:, i] = np.concatenate((self.table[j + 1:, i], np.zeros(1)))
-                    num_eliminated_elements += 1
-                else:
-                    j += 1
-            # Iterate over the i-th column again to sum up consecutive equal entries.
-            j = 0
-            while j < self.n - num_eliminated_elements - 1:
-                if self.table[j, i] == self.table[j + 1, i]:
-                    self.table[j + 1, i] = 2 * self.table[j + 1, i]
-                    self.table[j:, i] = np.concatenate((self.table[j + 1:, i], np.zeros(1)))
-                    num_eliminated_elements += 1
-                else:
-                    j += 1
+        self.compact(1, +1)
+        self.sum_adjacent_equal_elements(1, +1)
 
     def shift_down(self):
         """Shift the table down.
@@ -152,28 +141,8 @@ class Game:
         """
         # i -- column index
         # j -- row index
-        for i in range(self.n):
-            # We need to keep track of the number eliminated elements to avoid getting stuck in a loop.
-            num_eliminated_elements = 0
-            # Iterate through the i-th column in reverse order to compact the row by eliminating null entries.
-            j = self.n - 1
-            while j > num_eliminated_elements:
-                if self.table[j, i] == 0:
-                    # Compact the array by "eliminating" self.table[i, j]. The concatenate function is used for the sake
-                    # of efficiency.
-                    self.table[:j + 1, i] = np.concatenate((np.zeros(1), self.table[:j, i]))
-                    num_eliminated_elements += 1
-                else:
-                    j -= 1
-            # Iterate over the i-th column again to sum up consecutive equal entries.
-            j = self.n - 1
-            while j > num_eliminated_elements:
-                if self.table[j, i] == self.table[j - 1, i]:
-                    self.table[j - 1, i] = 2 * self.table[j - 1, i]
-                    self.table[:j + 1, i] = np.concatenate((np.zeros(1), self.table[:j, i]))
-                    num_eliminated_elements += 1
-                else:
-                    j -= 1
+        self.compact(1, -1)
+        self.sum_adjacent_equal_elements(1, -1)
 
     def update_status(self):
         """Check whether the game has been won or lost and update the self.status instance variable if necessary."""
